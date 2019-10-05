@@ -1,0 +1,188 @@
+﻿<html>
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css.css">
+    <title>�����������</title>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script>
+        let mas1 = [];
+        let mas2 = [];
+        let a, b, c, d, e, Mem;
+        let i, j, l;
+        let k = false;
+        let m = true;
+        c = "";
+		function knopka1(n)
+        {
+		    if (m) {
+		        document.getElementById("myText").value = "";
+		        m = false;
+		        c = "";
+		    }
+		    document.getElementById("myText").value += n;
+		    c += n;
+		    //alert(n);
+		    //alert(document.getElementById("myText").value);
+		}
+		function knopka2(n) {
+		    if (m) {
+		        document.getElementById("myText").value = "";
+		        c = "";
+		        m = false;
+		    }
+		        switch (n) {
+		            case 1:
+		                document.getElementById("myText").value += "+";
+		                c += "+";
+		                break;
+		            case 2:
+		                document.getElementById("myText").value += "-";
+		                c += "-";
+		                break;
+		            case 3:
+		                document.getElementById("myText").value += "*";
+		                c += "*";
+		                break;
+		            case 4:
+		                document.getElementById("myText").value += "/";
+		                c += "/";
+		                break;
+		            case 5:
+		                document.getElementById("myText").value += "cos(";
+		                c += "Math.cos(";
+		                break;
+		            case 6:
+		                document.getElementById("myText").value += "sin(";
+		                c += "Math.sin(";
+		                break;
+		            case 7:
+		                document.getElementById("myText").value += "ln(";
+		                c += "Math.log(";
+		                break;
+		            case 8:
+		                document.getElementById("myText").value += "√(";
+		                c += "Math.sqrt(";
+		                break;
+		            case 9:
+		                document.getElementById("myText").value += "(";
+		                c += "(";
+		                break;
+		            case 10:
+		                document.getElementById("myText").value += ")";
+		                c += ")";
+		                break;
+		        }    
+		}
+		function knopka3() {
+		    m = true;
+		    //a = document.getElementById("myText").value;
+		    a = c;
+		    //alert(a);
+		    b = eval(a);
+		    //alert(b);
+		    document.getElementById("myText").value = b;
+		    b = 0;  
+		    a = 0;
+		    c = "";
+		}
+		function knopka4() {
+		    document.getElementById("myText").value = "";
+		    c = "";
+		}
+		function knopka5(n) {
+		    if (m) {
+		        document.getElementById("myText").value = "";
+		        c = "";
+		        m = false;
+		    }
+		    switch (n) {
+		        case 1:
+		           // alert(1);
+		            e = localStorage.getItem(Mem);
+		            //alert(1);
+		            d = eval(e*1 + c*1);
+		            localStorage.setItem(Mem, d);
+		            //alert(localStorage.getItem(Mem));
+		            m = true;
+		            break;
+		        case 2:
+		            e = localStorage.getItem(Mem);
+		            d = eval(e*1 - c*1);
+		            localStorage.setItem(Mem, d);
+		           // alert(localStorage.getItem(Mem));
+		            m = true;
+		            break;
+		        case 3:
+		            c = "";
+		            c = localStorage.getItem(Mem);
+		            document.getElementById("myText").value = c;
+		            break;
+                case 4:
+                    localStorage.setItem(Mem, "");
+                    break;
+		    }
+		}
+		function yaustal() {
+		   // alert(2);
+		    localStorage.setItem(Mem, "");
+		    d = localStorage.getItem(Mem);
+		   // alert(d);
+		}
+	</script>
+    <style type="text/css">
+
+        {
+
+        }
+    </style>
+</head>
+<body onload="">
+    <div class="container">
+        <div>
+            <form>
+                <input type="text" id="myText" value="" disabled>
+                <div class="buttons">
+                    <div class="calc-row">
+                        <input class="but" type="button" value="1" onclick="knopka1(1)">
+                        <input class="but" type="button" value="2" onclick="knopka1(2)">
+                        <input class="but" type="button" value="3" onclick="knopka1(3)">
+                        <input class="but" type="button" value="+" onclick="knopka2(1)">
+                        <input class="but" type="button" value="cos" onclick="knopka2(5)">
+                        <input class="but" type="button" value="C" onclick="knopka4()">
+                        <input class="but" type="button" value="M+" onclick="knopka5(1)">
+                    </div>
+                    <div class="calc-row">
+                        <input class="but" type="button" value="4" onclick="knopka1(4)">
+                        <input class="but" type="button" value="5" onclick="knopka1(5)">
+                        <input class="but" type="button" value="6" onclick="knopka1(6)">
+                        <input class="but" type="button" value="-" onclick="knopka2(2)">
+                        <input class="but" type="button" value="sin" onclick="knopka2(6)">
+                        <input class="but" type="button" value="ln" onclick="knopka2(7)">
+                        <input class="but" type="button" value="M-" onclick="knopka5(2)">
+                    </div>
+                    <div class="calc-row">
+                        <input class="but" type="button" value="7" onclick="knopka1(7)">
+                        <input class="but" type="button" value="8" onclick="knopka1(8)">
+                        <input class="but" type="button" value="9" onclick="knopka1(9)">
+                        <input class="but" type="button" value="*" onclick="knopka2(3)">
+                        <input class="but" type="button" value="/" onclick="knopka2(4)">
+                        <input class="but" type="button" value="√" onclick="knopka2(8)">
+                        <input class="but" type="button" value="MR" onclick="knopka5(3)">
+                    </div>
+                    <div class="calc-row">
+                        <input class="but" type="button" value="0" onclick="knopka1(0)">
+                        <input class="but" id="equal" type="button" value="=" onclick="knopka3()">
+                        <input class="but" type="button" value="(" onclick="knopka2(9)">
+                        <input class="but" type="button" value=")" onclick="knopka2(10)">
+                        <input class="but" type="button" value="MC" onclick="knopka5(4)">
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

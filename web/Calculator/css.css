@@ -1,0 +1,46 @@
+.container {
+    display: flex;
+    width: 400px;
+    height: 250px;
+    flex-direction: column;
+    padding: 5px;
+    border: 1px black solid;
+    margin-left: 40%;
+    background: rgb(1, 1, 1);
+}
+
+.buttons {
+    cursor: pointer;
+    display: flex;
+    height: 95%;
+    flex-direction: column;
+}
+
+.calc-row {
+    display: flex;
+    height: 24%;
+}
+
+.but {
+    cursor: pointer;
+    margin: 5px;
+    display: flex;
+    width: 45%;
+    border: 1px black solid;
+    justify-content: center;
+    align-items: center;
+    background: rgb(180, 180, 180);
+}
+
+input {
+    width: 100%;
+    text-align: right;
+
+}
+
+#equal {
+    cursor: pointer;
+    width: 189%;
+    margin: 5px;
+    background: rgb(193, 0, 32);
+}

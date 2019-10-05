@@ -1,0 +1,2531 @@
+<html>
+<head>
+    <title>Canvas & Mootools</title>
+    <script>
+        let x_pos, y_pos, x_pos1, y_pos1;
+        let karta = [];
+        let bonerstat = 0;
+        let oozestat = 0;
+        let spiderstat = 0;
+        let movestat = 0;
+        let c4stat = 0;
+        let breakstat = 0;
+        let c4_x = 0;
+        let c4_y = 0;
+        let c4_et = 0;
+        let c4_i = true;
+        let c4_p = false;
+        let reload = false;
+        let reloadchec = 0;
+        let movechec = false;
+        let newgame = true;
+        let hpshkymax = 50;
+        let hpshky;
+        let boner = [];
+        let ooze = [];
+        let oozeline = [];
+        let spider = [];
+        let bonerc = 0;
+        let oozec = 0;
+        let oozelinec = 0;
+        let spiderc = 0;
+        let lvl = 1;
+        let poisoned = false;
+        let poisonedtimer = 5;
+        let i, j, k, l, m, p1, p2, p3, p4, user;
+        let score = 0;
+        ch1= false;
+        ch2 = false;
+        lock1 = -1;
+        lock2 = -1;
+        cannon_damadge = 1;
+        paused = false;
+		class enem1
+		{
+		    constructor(x,y)
+		    {
+		        this.x = x;
+		        this.y = y;
+		        this.damadge = 1;
+		        this.life = 1;
+		        this.direction = Math.floor(Math.random() * 4 + 1);
+		        this.stop = false;
+                this.falen = false;
+                this.respun = 0;
+		    }
+		};
+		class enem2
+		{
+		    constructor(x,y)
+		    {
+		        this.x = x;
+		        this.y = y;
+		        this.damadge = 2;
+		        this.life = 3;
+		        this.direction = Math.floor(Math.random() * 4 + 1);
+				this.stop = false;
+		    }
+        };
+        class enem2_1 {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.timer = 15;
+            }
+        };
+		class enem3
+		{
+		    constructor(x,y)
+		    {
+		        this.x = x;
+		        this.y = y;
+		        this.damadge = 1;
+		        this.life = 5;
+		        this.direction = Math.floor(Math.random() * 4 + 1);
+				this.stop = false;
+		    }
+		};
+
+		function Total_score(n)
+		{
+		    score +=10 * n;
+			document.getElementById("my_score").innerHTML = score;
+		}
+
+		/*function table_score()
+		{
+			document.getElementById('score_table').innerHTML = "рекорды: " + localStorage.length;
+			document.getElementById('score_table').innerText += '\n';
+			for (let i = 0; i < localStorage.length; i++)
+			{
+				let key = localStorage.key(i);
+				let str = '';
+				str =key +': '+ localStorage.getItem(key);
+				document.getElementById('score_table').innerText +=str;
+				document.getElementById('score_table').innerText +="\n";
+			}
+		}
+		*/
+		function change_user()
+		{
+		        user = prompt('Введите имя');
+		        document.getElementById('user').innerHTML = user;
+		}
+
+
+        /*
+			                Math.floor(Math.random() * 3 + 1);*/
+
+
+		function uf(n) {
+		    //alert(n);
+		    hpshky -= n;
+		    if (n > 0) {
+		        ctx_reload.beginPath();
+		        ctx_reload.fillStyle = "red";
+		        ctx_reload.rect(0, 0, 20, (50-hpshky)*16);
+		        ctx_reload.fill();
+		        ctx_reload.closePath();
+		    } else {
+                //alert ("типа хил")
+		        ctx_reload.beginPath();
+		        ctx_reload.fillStyle = "green";
+		        ctx_reload.rect(0, 800, 20, -hpshky*16);
+		        ctx_reload.fill();
+		        ctx_reload.closePath();
+		    }
+		    if (hpshky <= 0) {
+		        alert("ТЫ сдох");
+		        alert("Удачи в следующий раз");
+		    }
+		}
+
+        function step() {
+            for (i = 0; i < oozeline.length; i++) {
+                if ((karta[oozeline[i].x][oozeline[i].y] == 9) || (karta[oozeline[i].x][oozeline[i].y] == 0)) {
+                    karta[oozeline[i].x][oozeline[i].y] = 9
+                }
+                if ((oozeline[i].x == x_pos1) && (oozeline[i].y == y_pos1)) {
+                    uf(1);
+                }
+                oozeline[i].timer -= 1;
+                if ((oozeline[i].timer <= 0) && (karta[oozeline[i].x][oozeline[i].y] == 9)) {
+                    karta[oozeline[i].x][oozeline[i].y] = 0;
+                }
+                if (oozeline[i].timer <= 0) {
+                    oozeline.splice(i, 1);
+                }
+            }
+            
+            if (((karta[c4_x][c4_y] == 10) || (karta[c4_x][c4_y] == 0)) && (c4_p == true)) {
+                karta[c4_x][c4_y] = 10;
+            }
+
+            if ((karta[c4_x][c4_y] == 10) && (c4_p == false)) {
+                karta[c4_x][c4_y] = 0;
+            }
+
+            for (i = 0; i < boner.length; i++) {
+                if (boner[i].falen == false) {
+                    if ((Math.abs(boner[i].x - x_pos1) <= 2) && (Math.abs(boner[i].y - y_pos1) <= 2)) {
+                        //alert("!");
+                        //if (Math.abs(boner[i].x-x_pos1) >= Math.abs(boner[i].y-y_pos1)) {
+                        if ((boner[i].x - x_pos1 > 0) && ((karta[boner[i].x - 1][boner[i].y] == 0) || (karta[boner[i].x - 1][boner[i].y] == 10) || (karta[boner[i].x - 1][boner[i].y] == 9)) && (boner[i].stop == false)) {
+                            //if (karta[boner[i].x - 1][boner[i].y] == 0) {
+                            karta[boner[i].x][boner[i].y] = 0;
+                            boner[i].x -= 1
+                            karta[boner[i].x][boner[i].y] = 6;
+                            boner[i].stop = true;
+                            //alert("!1");
+                        } else {
+                            if ((karta[boner[i].x - 1][boner[i].y] == 3) && (boner[i].stop == false)) {
+                                //alert("!2");
+                                uf(boner[i].damadge);
+                                boner[i].stop = true;
+                            }
+                            //}
+                        }
+                        if ((boner[i].x - x_pos1 < 0) && ((karta[boner[i].x + 1][boner[i].y] == 0) || (karta[boner[i].x + 1][boner[i].y] == 10) || (karta[boner[i].x + 1][boner[i].y] == 9)) && (boner[i].stop == false)) {
+                            //if (karta[boner[i].x + 1][boner[i].y] == 0) {
+                            karta[boner[i].x][boner[i].y] = 0;
+                            boner[i].x += 1
+                            karta[boner[i].x][boner[i].y] = 6;
+                            boner[i].stop = true;
+                            //alert("!!1");
+                        } else {
+                            if ((karta[boner[i].x + 1][boner[i].y] == 3) && (boner[i].stop == false)) {
+                                uf(boner[i].damadge);
+                                boner[i].stop = true;
+                            }
+                            //}
+                        }
+                        //} else {
+                        if ((boner[i].y - y_pos1 > 0) && ((karta[boner[i].x][boner[i].y - 1] == 0) || (karta[boner[i].x][boner[i].y - 1] == 10) || (karta[boner[i].x][boner[i].y - 1] == 9)) && (boner[i].stop == false)) {
+                            //if (karta[boner[i].x][boner[i].y - 1] == 0) {
+                            karta[boner[i].x][boner[i].y] = 0;
+                            boner[i].y -= 1;
+                            karta[boner[i].x][boner[i].y] = 6;
+                            boner[i].stop = true;
+                            //alert("!!!1");
+                        } else {
+                            if ((karta[boner[i].x][boner[i].y - 1] == 3) && (boner[i].stop == false)) {
+                                uf(boner[i].damadge);
+                                boner[i].stop = true;
+                            }
+                            //}
+                        }
+                        if ((boner[i].y - y_pos1 < 0) && ((karta[boner[i].x][boner[i].y + 1] == 0) || (karta[boner[i].x][boner[i].y + 1] == 10) || (karta[boner[i].x][boner[i].y + 1] == 9)) && (boner[i].stop == false)) {
+                            //if (karta[boner[i].x][boner[i].y + 1] == 0) {
+                            karta[boner[i].x][boner[i].y] = 0;
+                            boner[i].y += 1;
+                            karta[boner[i].x][boner[i].y] = 6;
+                            boner[i].stop = true;
+                            //alert("!!!!1");
+                            //console.log(boner[i].x , boner[i].y);
+                            //console.log(x_pos1 ,y_pos1);
+                        } else {
+                            if ((karta[boner[i].x][boner[i].y + 1] == 3) && (boner[i].stop == false)) {
+                                uf(boner[i].damadge);
+                                boner[i].stop = true;
+                            }
+                            //}
+                            //console.log(karta[boner[i].x][boner[i].y + 1]);
+                        }
+                        boner[i].stop = false;
+                        //}
+                    } else {
+                        switch (boner[i].direction) {
+                            case 1:
+                                if (karta[boner[i].x + 1][boner[i].y] == 0 || karta[boner[i].x + 1][boner[i].y] == 9 || karta[boner[i].x + 1][boner[i].y] == 10) {
+                                    karta[boner[i].x][boner[i].y] = 0;
+                                    boner[i].x += 1
+                                    karta[boner[i].x][boner[i].y] = 6;
+                                } else {
+                                    boner[i].direction = Math.floor(Math.random() * 4 + 1);
+                                }
+                                break;
+                            case 2:
+                                if (karta[boner[i].x - 1][boner[i].y] == 0 || karta[boner[i].x - 1][boner[i].y] == 9 || karta[boner[i].x - 1][boner[i].y] == 10) {
+                                    karta[boner[i].x][boner[i].y] = 0;
+                                    boner[i].x -= 1
+                                    karta[boner[i].x][boner[i].y] = 6;
+                                } else {
+                                    boner[i].direction = Math.floor(Math.random() * 4 + 1);
+                                }
+                                break;
+                            case 3:
+                                if (karta[boner[i].x][boner[i].y + 1] == 0 || karta[boner[i].x][boner[i].y + 1] == 9 || karta[boner[i].x][boner[i].y + 1] == 10) {
+                                    karta[boner[i].x][boner[i].y] = 0;
+                                    boner[i].y += 1
+                                    karta[boner[i].x][boner[i].y] = 6;
+                                } else {
+                                    boner[i].direction = Math.floor(Math.random() * 4 + 1);
+                                }
+                                break;
+                            case 4:
+                                if (karta[boner[i].x][boner[i].y - 1] == 0 || karta[boner[i].x][boner[i].y - 1] == 9 || karta[boner[i].x][boner[i].y - 1] == 10) {
+                                    karta[boner[i].x][boner[i].y] = 0;
+                                    boner[i].y -= 1
+                                    karta[boner[i].x][boner[i].y] = 6;
+                                } else {
+                                    boner[i].direction = Math.floor(Math.random() * 4 + 1);
+                                }
+                                break;
+                        }
+                    }
+                }
+		    }
+		    for (i = 0; i < ooze.length; i++) {
+				if ((Math.abs(ooze[i].x-x_pos1) <=2)&&(Math.abs(ooze[i].y-y_pos1)<=2)) {
+		            //alert("!");
+					//if (Math.abs(boner[i].x-x_pos1) >= Math.abs(boner[i].y-y_pos1)) {
+				    if ((ooze[i].x - x_pos1 > 0) && ((karta[ooze[i].x - 1][ooze[i].y] == 0) || (karta[ooze[i].x - 1][ooze[i].y] == 9) || (karta[ooze[i].x - 1][ooze[i].y] == 10)) && (ooze[i].stop == false)) {
+						//if (karta[boner[i].x - 1][boner[i].y] == 0) {
+                        karta[ooze[i].x][ooze[i].y] = 9;
+                        oozelinec = new enem2_1(ooze[i].x, ooze[i].y);
+                        oozeline.push(oozelinec);
+						ooze[i].x -= 1
+						karta[ooze[i].x][ooze[i].y] = 7;
+						ooze[i].stop=true;
+						//alert("!1");
+					} else {
+						if ((karta[ooze[i].x - 1][ooze[i].y] == 3)&&(ooze[i].stop==false)) {
+						    uf(ooze[i].damadge);
+							ooze[i].stop=true;
+						}
+					}
+				    if ((ooze[i].x - x_pos1 < 0) && ((karta[ooze[i].x + 1][ooze[i].y] == 0) || (karta[ooze[i].x + 1][ooze[i].y] == 9) || (karta[ooze[i].x + 1][ooze[i].y] == 10)) && (ooze[i].stop == false)) {
+						//if (karta[boner[i].x + 1][boner[i].y] == 0) {
+                        karta[ooze[i].x][ooze[i].y] = 9;
+                        oozelinec = new enem2_1(ooze[i].x, ooze[i].y);
+                        oozeline.push(oozelinec);
+						ooze[i].x += 1
+						karta[ooze[i].x][ooze[i].y] = 7;
+						ooze[i].stop=true;
+						//alert("!!1");
+					} else {
+						if ((karta[ooze[i].x + 1][ooze[i].y] == 3)&&(ooze[i].stop==false)){
+						    uf(ooze[i].damadge);
+							ooze[i].stop=true;
+						}
+						//}
+					}
+					//} else {
+				    if ((ooze[i].y - y_pos1 > 0) && ((karta[ooze[i].x][ooze[i].y - 1] == 0) || (karta[ooze[i].x][ooze[i].y - 1] == 9)||(karta[ooze[i].x][ooze[i].y - 1] == 10))&&(ooze[i].stop==false)){
+						//if (karta[boner[i].x][boner[i].y - 1] == 0) {
+                        karta[ooze[i].x][ooze[i].y] = 9;
+                        oozelinec = new enem2_1(ooze[i].x, ooze[i].y);
+                        oozeline.push(oozelinec);
+						ooze[i].y -= 1;
+						karta[ooze[i].x][ooze[i].y] = 7;
+						ooze[i].stop=true;9
+						//alert("!!!1");
+					} else {
+						if ((karta[ooze[i].x][ooze[i].y - 1] == 3)&&(ooze[i].stop==false)) {
+						    uf(ooze[i].damadge);
+							ooze[i].stop=true;
+						}
+						//}
+					}
+				    if ((ooze[i].y - y_pos1 < 0) && ((karta[ooze[i].x][ooze[i].y + 1] == 0) || (karta[ooze[i].x][ooze[i].y + 1] == 9) || (karta[ooze[i].x][ooze[i].y + 1] == 10)) && (ooze[i].stop == false)) {
+						//if (karta[boner[i].x][boner[i].y + 1] == 0) {
+                        karta[ooze[i].x][ooze[i].y] = 9;
+                        oozelinec = new enem2_1(ooze[i].x, ooze[i].y);
+                        oozeline.push(oozelinec);
+						ooze[i].y += 1;
+						karta[ooze[i].x][ooze[i].y] = 7;
+						ooze[i].stop=true;
+						//alert("!!!!1");
+						//console.log(boner[i].x , boner[i].y);
+						//console.log(x_pos1 ,y_pos1);
+					} else {
+						if ((karta[ooze[i].x][ooze[i].y + 1] == 3)&&(ooze[i].stop==false)){
+						    uf(ooze[i].damadge);
+							ooze[i].stop=true;
+						}
+						//}
+						//console.log(karta[boner[i].x][boner[i].y + 1]);
+					}
+					ooze[i].stop=false;
+					//}
+		        } else {
+					switch (ooze[i].direction) {
+						case 1:
+						    if ((karta[ooze[i].x + 1][ooze[i].y] == 0) || (karta[ooze[i].x + 1][ooze[i].y] == 9) || (karta[ooze[i].x + 1][ooze[i].y] == 10)) {
+                                karta[ooze[i].x][ooze[i].y] = 9;
+                                oozelinec = new enem2_1(ooze[i].x, ooze[i].y);
+                                oozeline.push(oozelinec);
+								ooze[i].x += 1
+								karta[ooze[i].x][ooze[i].y] = 7;
+							} else {
+								ooze[i].direction = Math.floor(Math.random() * 4 + 1);
+							}
+							break;
+						case 2:
+						    if ((karta[ooze[i].x - 1][ooze[i].y] == 0) || (karta[ooze[i].x - 1][ooze[i].y] == 9) || (karta[ooze[i].x - 1][ooze[i].y] == 10)) {
+                                karta[ooze[i].x][ooze[i].y] = 9;
+                                oozelinec = new enem2_1(ooze[i].x, ooze[i].y);
+                                oozeline.push(oozelinec);
+                                ooze[i].x -= 1
+                                karta[ooze[i].x][ooze[i].y] = 7;
+                            } else {
+							    ooze[i].direction = Math.floor(Math.random() * 4 + 1);
+							}
+							break;
+						case 3:
+						    if ((karta[ooze[i].x][ooze[i].y + 1] == 0) || (karta[ooze[i].x][ooze[i].y + 1] == 9) || (karta[ooze[i].x][ooze[i].y + 1] == 10)) {
+                                karta[ooze[i].x][ooze[i].y] = 9;
+                                oozelinec = new enem2_1(ooze[i].x, ooze[i].y);
+                                oozeline.push(oozelinec);
+						        ooze[i].y += 1
+						        karta[ooze[i].x][ooze[i].y] = 7;
+						    } else {
+						        ooze[i].direction = Math.floor(Math.random() * 4 + 1);
+						    }
+						    break;
+						case 4:
+						    if ((karta[ooze[i].x][ooze[i].y - 1] == 0) || (karta[ooze[i].x][ooze[i].y - 1] == 9) || (karta[ooze[i].x][ooze[i].y - 1] == 10)) {
+                                karta[ooze[i].x][ooze[i].y] = 9;
+                                oozelinec = new enem2_1(ooze[i].x, ooze[i].y);
+                                oozeline.push(oozelinec);
+						        ooze[i].y -= 1
+						       karta[ooze[i].x][ooze[i].y] = 7;
+						    } else {
+						        ooze[i].direction = Math.floor(Math.random() * 4 + 1);
+						    }
+						    break;
+					}
+				}
+		    }
+		    for (i = 0; i < spider.length; i++) {
+		        if ((Math.abs(spider[i].x - x_pos1) <= 2) && (Math.abs(spider[i].y - y_pos1) <= 2)) {
+		            //alert("!");
+		            //if (Math.abs(boner[i].x-x_pos1) >= Math.abs(boner[i].y-y_pos1)) {
+		            if ((spider[i].x - x_pos1 > 0) && ((karta[spider[i].x - 1][spider[i].y] == 0) || (karta[spider[i].x - 1][spider[i].y] == 9) || (karta[spider[i].x - 1][spider[i].y] == 10)) && (spider[i].stop == false)) {
+		                //if (karta[boner[i].x - 1][boner[i].y] == 0) {
+		                karta[spider[i].x][spider[i].y] = 0;
+		                spider[i].x -= 1
+		                karta[spider[i].x][spider[i].y] = 8;
+		                spider[i].stop = true;
+		                //alert("!1");
+		            } else {
+		                if ((karta[spider[i].x - 1][spider[i].y] == 3) && (spider[i].stop == false)) {
+                            uf(spider[i].damadge);
+                            poisoned = true;
+                            poisonedtimer = 5;
+		                    spider[i].stop = true;
+		                }
+		                //}
+		            }
+		            if ((spider[i].x - x_pos1 < 0) && ((karta[spider[i].x + 1][spider[i].y] == 0) || (karta[spider[i].x + 1][spider[i].y] == 9) || (karta[spider[i].x + 1][spider[i].y] == 10)) && (spider[i].stop == false)) {
+		                //if (karta[boner[i].x + 1][boner[i].y] == 0) {
+		                karta[spider[i].x][spider[i].y] = 0;
+		                spider[i].x += 1
+		                karta[spider[i].x][spider[i].y] = 8;
+		                spider[i].stop = true;
+		                //alert("!!1");
+		            } else {
+		                if ((karta[spider[i].x + 1][spider[i].y] == 3) && (spider[i].stop == false)) {
+                            uf(spider[i].damadge);
+                            poisoned = true;
+                            poisonedtimer = 5;
+		                    spider[i].stop = true;
+		                }
+		                //}
+		            }
+		            //} else {
+		            if ((spider[i].y - y_pos1 > 0) && ((karta[spider[i].x][spider[i].y - 1] == 0) || (karta[spider[i].x][spider[i].y - 1] == 9) || (karta[spider[i].x][spider[i].y - 1] == 10)) && (spider[i].stop == false)) {
+		                //if (karta[boner[i].x][boner[i].y - 1] == 0) {
+		                karta[spider[i].x][spider[i].y] = 0;
+		                spider[i].y -= 1;
+		                karta[spider[i].x][spider[i].y] = 8;
+		                spider[i].stop = true;
+		                //alert("!!!1");
+		            } else {
+		                if ((karta[spider[i].x][spider[i].y - 1] == 3) && (spider[i].stop == false)) {
+                            uf(spider[i].damadge);
+                            poisoned = true;
+                            poisonedtimer = 5;
+		                    spider[i].stop = true;
+		                }
+		                //}
+		            }
+		            if ((spider[i].y - y_pos1 < 0) && ((karta[spider[i].x][spider[i].y + 1] == 0) || (karta[spider[i].x][spider[i].y + 1] == 9) || (karta[spider[i].x][spider[i].y + 1] == 10)) && (spider[i].stop == false)) {
+		                //if (karta[boner[i].x][boner[i].y + 1] == 0) {
+		                karta[spider[i].x][spider[i].y] = 0;
+		                spider[i].y += 1;
+		                karta[spider[i].x][spider[i].y] = 8;
+		                spider[i].stop = true;
+		                //alert("!!!!1");
+		                //console.log(boner[i].x , boner[i].y);
+		                //console.log(x_pos1 ,y_pos1);
+		            } else {
+		                if ((karta[spider[i].x][spider[i].y + 1] == 3) && (spider[i].stop == false)) {
+                            uf(spider[i].damadge);
+                            poisoned = true;
+                            poisonedtimer = 5;
+		                    spider[i].stop = true;
+		                }
+		                //}
+		                //console.log(karta[boner[i].x][boner[i].y + 1]);
+		            }
+		            spider[i].stop = false;
+		            //}
+		        } else {
+		            switch (spider[i].direction) {
+		                case 1:
+		                    if (karta[spider[i].x + 1][spider[i].y] == 0 || karta[spider[i].x + 1][spider[i].y] == 9 || karta[spider[i].x + 1][spider[i].y] == 10) {
+		                        karta[spider[i].x][spider[i].y] = 0;
+		                        spider[i].x += 1
+		                        karta[spider[i].x][spider[i].y] = 8;
+		                    } else {
+		                        spider[i].direction = Math.floor(Math.random() * 4 + 1);
+		                    }
+		                    break;
+		                case 2:
+		                    if (karta[spider[i].x - 1][spider[i].y] == 0 || karta[spider[i].x - 1][spider[i].y] == 9 || karta[spider[i].x - 1][spider[i].y] == 10) {
+		                        karta[spider[i].x][spider[i].y] = 0;
+		                        spider[i].x -= 1
+		                        karta[spider[i].x][spider[i].y] = 8;
+		                    } else {
+		                        spider[i].direction = Math.floor(Math.random() * 4 + 1);
+		                    }
+		                    break;
+		                case 3:
+		                    if (karta[spider[i].x][spider[i].y + 1] == 0 || karta[spider[i].x][spider[i].y + 1] == 9 || karta[spider[i].x][spider[i].y + 1] == 10) {
+		                        karta[spider[i].x][spider[i].y] = 0;
+		                        spider[i].y += 1
+		                        karta[spider[i].x][spider[i].y] = 8;
+		                    } else {
+		                        spider[i].direction = Math.floor(Math.random() * 4 + 1);
+		                    }
+		                    break;
+		                case 4:
+		                    if (karta[spider[i].x][spider[i].y - 1] == 0 || karta[spider[i].x][spider[i].y - 1] == 9 || karta[spider[i].x][spider[i].y - 1] == 10) {
+		                        karta[spider[i].x][spider[i].y] = 0;
+		                        spider[i].y -= 1
+		                        karta[spider[i].x][spider[i].y] = 8;
+		                    } else {
+		                        spider[i].direction = Math.floor(Math.random() * 4 + 1);
+		                    }
+		                    break;
+		            }
+		        }
+            }
+		}
+		function fuckin_random() {
+		    for (i = 0; i < 81; i++) {
+		        karta[i] = [81];
+		        for (j = 0; j < 81; j++) {
+		            karta[i][j] = 0;
+		            //console.log(j + " j!!!");
+		        }
+		        // console.log(i + " i!!!");
+		    }
+		    for (i = 0; i < 81; i++) {
+		        for (j = 0; j < 81; j++) {
+		            k = Math.floor(Math.random() * 10);
+		            //console.log(i, j, k);
+		            switch (k) {
+		                case 0:
+		                case 1:
+		                case 2:
+		                case 3:
+		                //case 4:
+		                    karta[i][j] = 2;
+		                    break;
+		                case 5:
+		                case 6:
+		                    karta[i][j] = 1;
+		                    break;
+		            }
+		        }
+		    }
+		    for (i = 0; i < 81; i++) {
+		        karta[40][i] = 1;
+		        karta[i][40] = 1;
+		        karta[i][0] = 1;
+		        karta[i][80] = 1;
+		        karta[0][i] = 1;
+		        karta[80][i] = 1;
+		    }
+		    p1 = Math.floor(Math.random() * 39);
+		    p2 = Math.floor(Math.random() * 39);
+		    p3 = Math.floor(Math.random() * 39);
+		    p4 = Math.floor(Math.random() * 39);
+		    karta[40][p1] = 0;
+		    karta[40][p1 + 1] = 0;
+		    karta[40][40 + p2 + 1] = 0;
+		    karta[40][40 + p2 + 2] = 0;
+		    karta[p3][40] = 0;
+		    karta[p3 + 1][40] = 0;
+		    karta[40 + p4 + 1][40] = 0;
+		    karta[40 + p4 + 2][40] = 0;
+		    l = Math.floor(Math.random() * 10 + 5* lvl);
+		    for (i = 1; i <= l; i++) {
+
+		        x_pos1 = Math.floor(Math.random() * 38 + 1);
+		        y_pos1 = Math.floor(Math.random() * 38 + 1);
+		        //alert("x " + x_pos1 + " Y " +  y_pos1+"!");
+		        k = Math.floor(Math.random() * 4 + 1);
+		        switch (k) {
+		            case 1:
+		                karta[x_pos1][y_pos1] = 8;
+		                break;
+		            case 2:
+		                karta[x_pos1 + 41][y_pos1] = 8;
+		                break;
+		            case 3:
+		                karta[x_pos1][y_pos1 + 41] = 8;
+		                break;
+		            case 4:
+		                karta[x_pos1 + 41][y_pos1 + 41] = 8;
+		                break;
+		        }
+		    }
+		    l = Math.floor(Math.random() * 20 + 5 * lvl);
+		    for (i = 1; i <= l; i++) {
+		        x_pos1 = Math.floor(Math.random() * 38+1);
+		        y_pos1 = Math.floor(Math.random() * 38+1);
+		        //alert("x " + x_pos1 + " Y " +  y_pos1+"!");
+		        k = Math.floor(Math.random() * 4 + 1);
+		        switch (k) {
+		            case 1:
+		                karta[x_pos1][y_pos1] = 7;
+		                break;
+		            case 2:
+		                karta[x_pos1 + 41][y_pos1] = 7;
+		                break;
+		            case 3:
+		                karta[x_pos1][y_pos1 + 41] = 7;
+		                break;
+		            case 4:
+		                karta[x_pos1 + 41][y_pos1 + 41] = 7;
+		                break;
+		        }
+		    }
+		    l = Math.floor(Math.random() * 40 + 5*lvl);
+		    for (i = 1; i <= l; i++) {
+		        x_pos1 = Math.floor(Math.random() * 38 + 1);
+		        y_pos1 = Math.floor(Math.random() * 38 + 1);
+		        //alert("x " + x_pos1 + " Y " +  y_pos1+"!");
+		        k = Math.floor(Math.random() * 4 + 1);
+		        switch (k) {
+		            case 1:
+		                karta[x_pos1][y_pos1] = 6;
+		                break;
+		            case 2:
+		                karta[x_pos1 + 41][y_pos1] = 6;
+		                break;
+		            case 3:
+		                karta[x_pos1][y_pos1 + 41] = 6;
+		                break;
+		            case 4:
+		                karta[x_pos1 + 41][y_pos1 + 41] = 6;
+		                break;
+		        }
+		    }
+		    l = Math.floor(Math.random() * 20+5) - lvl;
+		    for (i = 1; i <= l; i++) {
+		        x_pos1 = Math.floor(Math.random() * 38 + 1);
+		        y_pos1 = Math.floor(Math.random() * 38 + 1);
+		        //alert("x " + x_pos1 + " Y " +  y_pos1+"!");
+		        k = Math.floor(Math.random() * 4 + 1);
+		        switch (k) {
+		            case 1:
+		                karta[x_pos1][y_pos1] = 5;
+		                break;
+		            case 2:
+		                karta[x_pos1 + 41][y_pos1] = 5;
+		                break;
+		            case 3:
+		                karta[x_pos1][y_pos1 + 41] = 5;
+		                break;
+		            case 4:
+		                karta[x_pos1 + 41][y_pos1 + 41] = 5;
+		                break;
+		        }
+		    }
+
+		    x_pos1 = Math.floor(Math.random() * 36 + 2);
+		    y_pos1 = Math.floor(Math.random() * 36 + 2);
+		    //alert("x " + x_pos1 + " Y " +  y_pos1+"!");
+		    k = Math.floor(Math.random() * 4 + 1);
+		    m = k;
+		    switch (k) {
+		        case 1:
+		            karta[x_pos1][y_pos1] = 4;
+		            break;
+		        case 2:
+		            karta[x_pos1 + 41][y_pos1] = 4;
+		            break;
+		        case 3:
+		            karta[x_pos1][y_pos1 + 41] = 4;
+		            break;
+		        case 4:
+		            karta[x_pos1 + 41][y_pos1 + 41] = 4;
+		            break;
+		    }
+		    x_pos1 = Math.floor(Math.random() * 36+2);
+		    y_pos1 = Math.floor(Math.random() * 36 + 2);
+		    //alert("x " + x_pos1 + " Y " +  y_pos1+"!");
+		    do {
+		        k = Math.floor(Math.random() * 4 + 1);
+		    } while (m == k);
+		    switch (k) {
+		        case 1:
+		            karta[x_pos1][y_pos1] = 3;
+		            break;
+		        case 2:
+		            karta[x_pos1 + 41][y_pos1] = 3;
+		            x_pos1 += 41;
+
+		            break;
+		        case 3:
+		            karta[x_pos1][y_pos1 + 41] = 3;
+		            y_pos1 += 41;
+		            break;
+		        case 4:
+		            karta[x_pos1 + 41][y_pos1 + 41] = 3;
+		            x_pos1 += 41;
+		            y_pos1 += 41;
+		            break;
+		    }
+		    karta[x_pos1 + 1][y_pos1] = 0;
+		    karta[x_pos1 - 1][y_pos1] = 0;
+		    karta[x_pos1][y_pos1 + 1] = 0;
+		    karta[x_pos1][y_pos1 - 1] = 0;
+		    karta[x_pos1 + 1][y_pos1 + 1] = 0;
+		    karta[x_pos1 + 1][y_pos1 - 1] = 0;
+		    karta[x_pos1 - 1][y_pos1 + 1] = 0;
+		    karta[x_pos1 - 1][y_pos1 - 1] = 0;  
+        }
+
+		/*function bup() {
+		    x_pos = (event.clientX - 75) / 10;
+		    x_pos = x_pos - (x_pos % 1);
+		    y_pos = (event.clientY - 80) / 10;
+		    y_pos = y_pos - (y_pos % 1);
+		    //alert("x " + x_pos1 + " Y " + y_pos1 + "!!");
+		    //alert(x_pos + " " + y_pos);
+		    //alert(karta[x_pos*1][y_pos*1]);
+		    if (karta[x_pos][y_pos] == 0) {
+		        karta[x_pos1][y_pos1] = 0;
+		        ctx.beginPath();
+		        ctx.fillStyle = "dimgray";
+		        ctx.fillRect(x_pos1 * 10, y_pos1 * 10, 10, 10);
+		        ctx.fill();
+		        ctx.closePath();
+		        net();
+		        //alert(1);
+		        karta[x_pos][y_pos] = 3;
+		        x_pos1 = x_pos;
+		        y_pos1 = y_pos;
+		        ctx.beginPath();
+		        ctx.fillStyle = "blue";
+		        ctx.fillRect(x_pos * 10, y_pos * 10, 10, 10);
+		        ctx.fill();
+		        ctx.closePath();
+		        
+		    }
+		}*/
+		function net() {
+		    ctx.beginPath();
+		    ctx.fillStyle = "dimgray";
+		    ctx.fillRect(0, 0, 810, 810);
+		    ctx.fill();
+		    ctx.closePath();
+		    for (i = 0; i < 81; i++) {
+		        karta[i][0] = 1;
+		        karta[i][80] = 1;
+		        karta[0][i] = 1;
+		        karta[80][i] = 1;
+		    }
+		        for (let i = 0; i < 81; i++) {
+		            for (let j = 0; j < 81; j++) {
+		                //console.log(i, j, karta[i][j]);
+		                switch (karta[i][j]) {
+		                    case 0:
+		                        break;
+		                    case 1:
+		                        //console.log(i, j, karta[i][j]);
+		                        ctx.beginPath();
+		                        ctx.fillStyle = "black";
+		                        ctx.fillRect(i * 10, j * 10, 10, 10);
+		                        ctx.fill();
+		                        ctx.closePath();
+		                        break;
+		                    case 2:
+		                        //console.log(i, j, karta[i][j], "!!!!");
+		                        ctx.beginPath();
+		                        ctx.fillStyle = "saddlebrown";
+		                        ctx.fillRect(i * 10, j * 10, 10, 10);
+		                        ctx.fill();
+		                        ctx.closePath();
+		                        break;
+		                    case 3:
+		                        //if (newgame) {
+		                            ctx.beginPath();
+		                            ctx.fillStyle = "blue";
+		                            ctx.fillRect(i * 10, j * 10, 10, 10);
+		                            ctx.fill();
+		                            ctx.closePath();
+		                        //}
+		                        
+		                        break;
+		                    case 4:
+		                            ctx.beginPath();
+		                            ctx.fillStyle = "gold";
+		                            ctx.fillRect(i * 10, j * 10, 10, 10);
+		                            ctx.fill();
+		                            ctx.closePath();
+		                        break;
+		                    case 5:
+		                            ctx.beginPath();
+		                            ctx.fillStyle = "burlywood";
+		                            ctx.fillRect(i * 10, j * 10, 10, 10);
+		                            ctx.fill();
+		                            ctx.closePath();
+		                        break;
+		                    case 6:
+		                            ctx.beginPath();
+		                            ctx.fillStyle = "white";
+		                            ctx.fillRect(i * 10, j * 10, 10, 10);
+		                            ctx.fill();
+		                            ctx.closePath();
+		                            if (newgame) {
+		                                bonerc = new enem1(i, j);
+		                                boner.push (bonerc);
+		                            }
+		                        break;
+		                    case 7:
+		                            ctx.beginPath();
+		                            ctx.fillStyle = "green";
+		                            ctx.fillRect(i * 10, j * 10, 10, 10);
+		                            ctx.fill();
+		                            ctx.closePath();
+		                            if (newgame) {
+		                                oozec = new enem2(i, j);
+		                                ooze.push(oozec);
+		                            }
+		                            break;
+		                    case 8:
+		                        ctx.beginPath();
+		                        ctx.fillStyle = "darkslategray";
+		                        ctx.fillRect(i * 10, j * 10, 10, 10);
+		                        ctx.fill();
+		                        ctx.closePath();
+		                        if (newgame) {
+		                            spiderc = new enem3(i, j);
+		                            spider.push(spiderc);
+		                        }
+                                break;
+                            case 9:
+                                ctx.beginPath();
+                                ctx.fillStyle = "greenyellow";
+                                ctx.fillRect(i * 10, j * 10, 10, 10);
+                                ctx.fill();
+                                ctx.closePath();
+                                break;
+		                    case 10:
+		                        ctx.beginPath();
+		                        ctx.fillStyle = "red";
+		                        ctx.fillRect(i * 10, j * 10, 10, 10);
+		                        ctx.fill();
+		                        ctx.closePath();
+		                        break;
+		                }
+		            }
+		        }
+		        newgame = false;
+		        //console.log(boner.length, ooze.length, spider.length);
+		    //alert(1);
+		    for (let i = 1; i <= 80; i++) {
+		        ctx.beginPath();
+		        ctx.moveTo(0, 10 * i);
+		        ctx.lineTo(810, 10 * i);
+		        ctx.strokeStyle = "dimgray"
+		        ctx.lineWidth = 1;
+		        ctx.stroke();
+		        ctx.closePath();
+		        ctx.beginPath();
+		        ctx.moveTo(10 * i, 0);
+		        ctx.lineTo(10 * i, 810);
+		        ctx.strokeStyle = "dimgray"
+		        ctx.lineWidth = 1;
+		        ctx.stroke();
+		        ctx.closePath();
+		    }
+		    for (let i = 1; i <= 80; i++) {
+		        ctx.beginPath();
+		        ctx.moveTo(0, 10*i);
+		        ctx.lineTo(810, 10*i);
+		        ctx.strokeStyle = "black"
+		        ctx.lineWidth = 1;
+		        ctx.stroke();
+		        ctx.closePath();
+		        ctx.beginPath();
+		        ctx.moveTo(10 * i, 0);
+		        ctx.lineTo(10 * i, 810);
+		        ctx.strokeStyle = "black"
+		        ctx.lineWidth = 1;
+		        ctx.stroke();
+		        ctx.closePath();
+		    }
+		    ctx.beginPath();
+		    ctx.fillStyle = "black";
+		    ctx.fillRect(0, 0, 810, (y_pos1-4) *10);
+		    ctx.fill();
+		    ctx.closePath();
+		    ctx.beginPath();
+		    ctx.fillStyle = "black";
+		    ctx.fillRect(0, (y_pos1 + 5) * 10, 810, 810);
+		    ctx.fill();
+		    ctx.closePath();
+		    ctx.beginPath();
+		    ctx.fillStyle = "black";
+		    ctx.fillRect(0, 0, (x_pos1 - 4)*10, 810);
+		    ctx.fill();
+		    ctx.closePath();
+		    ctx.beginPath();
+		    ctx.fillStyle = "black";
+		    ctx.fillRect((x_pos1 + 5) * 10, 0, 810, 810);
+		    ctx.fill();
+		    ctx.closePath();
+		}
+		function init() {
+		    //current_live = 5;
+            alert("Управление на WASD");
+            alert("Выстрел - LShift + WASD");
+            alert("Бомба - E");
+		    change_user();
+			canvas = document.getElementById('canvas');
+			if (canvas.getContext) ctx = canvas.getContext('2d');
+			canvas_reload = document.getElementById("canvas_reload");
+			if (canvas.getContext) ctx_reload = canvas_reload.getContext('2d');
+			fuckin_random();
+			net();
+			hpshky = 50;
+			//live = new Image();
+			//max_live = 10;
+			//draw_live(0);
+		}
+        
+		function nextlvl() {
+		    boner.splice(0, boner.length);
+		    ooze.splice(0, ooze.length);
+		    oozeline.splice(0, oozeline.length);
+		    spider.splice(0, spider.length);
+		    fuckin_random();
+		    net();
+		    uf(-(hpshkymax - hpshky));
+		    newgame = true;
+		    //hpshky = 50;
+		}
+    
+		document.addEventListener('keydown', function (event) {
+		    if (hpshky > 0) {
+		        //console.log(boner.length, ooze.length, spider.length);
+		        if (event.code == 'KeyW' && event.shiftKey && reload == false) {
+		            reload = true;
+		            //alert(reload);
+		            movechec = true;
+		            for (i = 1; i < 80; i++) {
+		                switch (karta[x_pos1][y_pos1 - i]) {
+		                    //case 0:
+		                    case 9:
+		                    case 10:
+		                    case 1:
+		                    case 3:
+		                    case 4:
+		                    case 5:
+		                        //alert(x_pos1 +" "+ y_pos1 - i);
+		                        i = 81;
+		                        break;
+		                    case 2:
+		                        karta[x_pos1][y_pos1 - i] = 0;
+		                        breakstat++;
+		                        document.getElementById("st6").innerHTML = breakstat;
+		                        i = 81;
+		                        break;
+		                    case 6:
+		                        for (j = 0; j < boner.length; j++) {
+		                            if ((boner[j].x == x_pos1) && (boner[j].y == y_pos1 - i)) {
+		                                l = Math.floor(Math.random() * 4 + 1)
+		                                switch (l) {
+		                                    case 1:
+		                                    case 2:
+		                                    case 3:
+		                                        boner[j].falen = true;
+		                                        karta[boner[j].x][boner[j].y] = 0;
+		                                        break;
+		                                    case 4:
+		                                        karta[boner[j].x][boner[j].y] = 0;
+		                                        boner.splice(j, 1);
+		                                        Total_score(1);
+		                                        bonerstat++;
+		                                        document.getElementById("st1").innerHTML = bonerstat;
+		                                        break;
+		                                }
+		                                break;
+		                            }
+		                        }
+		                        i = 81;
+		                        break;
+		                    case 7:
+		                        for (j = 0; j < ooze.length; j++) {
+		                            if ((ooze[j].x == x_pos1) && (ooze[j].y == y_pos1 - i)) {
+		                                ooze[j].life -= 3;
+		                                if (ooze[j].life <= 0) {
+		                                    karta[ooze[j].x][ooze[j].y] = 0;
+		                                    ooze.splice(j, 1);
+		                                    Total_score(2);
+		                                    oozestat++;
+		                                    document.getElementById("st2").innerHTML = oozestat;
+		                                }
+		                                break;
+		                            }
+		                        }
+		                        i = 81;
+		                        break;
+		                    case 8:
+		                        for (j = 0; j < spider.length; j++) {
+		                            if ((spider[j].x == x_pos1) && (spider[j].y == y_pos1 - i)) {
+		                                spider[j].life -= 3;
+		                                if (spider[j].life <= 0) {
+		                                    karta[spider[j].x][spider[j].y] = 0;
+		                                    spider.splice(j, 1);
+		                                    Total_score(3);
+		                                    spiderstat++;
+		                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                }
+		                                break;
+		                            }
+		                        }
+		                        i = 81;
+		                        break;
+		                }
+		            }
+		            if (poisoned) {
+		                poisonedtimer--;
+		            }
+		        } else {
+		            if (event.code == 'KeyA' && event.shiftKey && reload == false) {
+		                reload = true;
+		                movechec = true;
+		                for (i = 1; i < 80; i++) {
+		                    switch (karta[x_pos1 - i][y_pos1]) {
+		                        //case 0:
+		                        case 9:
+		                        case 10:
+		                        case 1:
+		                        case 3:
+		                        case 4:
+		                        case 5:
+		                            //alert(x_pos1 +" "+ y_pos1 - i);
+		                            i = 81;
+		                            break;
+		                        case 2:
+		                            karta[x_pos1 - i][y_pos1] = 0;
+		                            breakstat++;
+		                            document.getElementById("st6").innerHTML = breakstat;
+		                            i = 81;
+		                            break;
+		                        case 6:
+		                            for (j = 0; j < boner.length; j++) {
+		                                if ((boner[j].x == x_pos1 - i) && (boner[j].y == y_pos1)) {
+		                                    l = Math.floor(Math.random() * 4 + 1)
+		                                    switch (l) {
+		                                        case 1:
+		                                        case 2:
+		                                        case 3:
+		                                            boner[j].falen = true;
+		                                            karta[boner[j].x][boner[j].y] = 0;
+		                                            break;
+		                                        case 4:
+		                                            karta[boner[j].x][boner[j].y] = 0;
+		                                            boner.splice(j, 1);
+		                                            Total_score(1);
+		                                            bonerstat++;
+		                                            document.getElementById("st1").innerHTML = bonerstat;
+		                                            break;
+		                                    }
+		                                    break;
+		                                }
+		                            }
+		                            i = 81;
+		                            break;
+		                        case 7:
+		                            for (j = 0; j < ooze.length; j++) {
+		                                if ((ooze[j].x == x_pos1 - i) && (ooze[j].y == y_pos1)) {
+		                                    ooze[j].life -= 3;
+		                                    if (ooze[j].life <= 0) {
+		                                        karta[ooze[j].x][ooze[j].y] = 0;
+		                                        ooze.splice(j, 1);
+		                                        Total_score(2);
+		                                        oozestat++;
+		                                        document.getElementById("st2").innerHTML = oozestat;
+		                                    }
+		                                    break;
+		                                }
+		                            }
+		                            i = 81;
+		                            break;
+		                        case 8:
+		                            for (j = 0; j < spider.length; j++) {
+		                                if ((spider[j].x == x_pos1 - i) && (spider[j].y == y_pos1)) {
+		                                    spider[j].life -= 3;
+		                                    if (spider[j].life <= 0) {
+		                                        karta[spider[j].x][spider[j].y] = 0;
+		                                        spider.splice(j, 1);
+		                                        Total_score(3);
+		                                        spiderstat++;
+		                                        document.getElementById("st3").innerHTML = spiderstat;
+		                                    }
+		                                    break;
+		                                }
+		                            }
+		                            i = 81;
+		                            break;
+		                    }
+		                }
+		                if (poisoned) {
+		                    poisonedtimer--;
+		                }
+		            } else {
+		                if (event.code == 'KeyS' && event.shiftKey && reload == false) {
+		                    reload = true;
+		                    movechec = true;
+		                    for (i = 1; i < 80; i++) {
+		                        switch (karta[x_pos1][y_pos1 + i]) {
+		                            //case 0:
+		                            case 9:
+		                            case 10:
+		                            case 1:
+		                            case 3:
+		                            case 4:
+		                            case 5:
+		                                //alert(x_pos1 +" "+ y_pos1 - i);
+		                                i = 81;
+		                                break;
+		                            case 2:
+		                                karta[x_pos1][y_pos1 + i] = 0;
+		                                i = 81;
+		                                breakstat++;
+		                                document.getElementById("st6").innerHTML = breakstat;
+		                                break;
+		                            case 6:
+		                                for (j = 0; j < boner.length; j++) {
+		                                    if ((boner[j].x == x_pos1) && (boner[j].y == y_pos1 + i)) {
+		                                        l = Math.floor(Math.random() * 4 + 1)
+		                                        switch (l) {
+		                                            case 1:
+		                                            case 2:
+		                                            case 3:
+		                                                boner[j].falen = true;
+		                                                karta[boner[j].x][boner[j].y] = 0;
+		                                                break;
+		                                            case 4:
+		                                                karta[boner[j].x][boner[j].y] = 0;
+		                                                boner.splice(j, 1);
+		                                                Total_score(1);
+		                                                bonerstat++;
+		                                                document.getElementById("st1").innerHTML = bonerstat;
+		                                                break;
+		                                        }
+		                                        break;
+		                                    }
+		                                }
+		                                i = 81;
+		                                break;
+		                            case 7:
+		                                for (j = 0; j < ooze.length; j++) {
+		                                    if ((ooze[j].x == x_pos1) && (ooze[j].y == y_pos1 + i)) {
+		                                        ooze[j].life -= 3;
+		                                        if (ooze[j].life <= 0) {
+		                                            karta[ooze[j].x][ooze[j].y] = 0;
+		                                            ooze.splice(j, 1);
+		                                            Total_score(2);
+		                                            oozestat++;
+		                                            document.getElementById("st2").innerHTML = oozestat;
+		                                        }
+		                                        break;
+		                                    }
+		                                }
+		                                i = 81;
+		                                break;
+		                            case 8:
+		                                for (j = 0; j < spider.length; j++) {
+		                                    if ((spider[j].x == x_pos1) && (spider[j].y == y_pos1 + i)) {
+		                                        spider[j].life -= 3;
+		                                        if (spider[j].life <= 0) {
+		                                            karta[spider[j].x][spider[j].y] = 0;
+		                                            spider.splice(j, 1);
+		                                            Total_score(3);
+		                                            spiderstat++;
+		                                            document.getElementById("st3").innerHTML = spiderstat;
+		                                        }
+		                                        break;
+		                                    }
+		                                }
+		                                i = 81;
+		                                break;
+		                        }
+		                    }
+		                    if (poisoned) {
+		                        poisonedtimer--;
+		                    }
+		                } else {
+		                    if (event.code == 'KeyD' && event.shiftKey && reload == false) {
+		                        reload = true;
+		                        movechec = true;
+		                        for (i = 1; i < 80; i++) {
+		                            switch (karta[x_pos1 + i][y_pos1]) {
+		                                //case 0:
+		                                case 9:
+		                                case 10:
+		                                case 1:
+		                                case 3:
+		                                case 4:
+		                                case 5:
+		                                    //alert(x_pos1 +" "+ y_pos1 - i);
+		                                    i = 81;
+		                                    break;
+		                                case 2:
+		                                    breakstat++;
+		                                    document.getElementById("st6").innerHTML = breakstat;
+		                                    karta[x_pos1 + i][y_pos1] = 0;
+		                                    i = 81;
+		                                    break;
+		                                case 6:
+		                                    for (j = 0; j < boner.length; j++) {
+		                                        if ((boner[j].x == x_pos1 + i) && (boner[j].y == y_pos1)) {
+		                                            l = Math.floor(Math.random() * 4 + 1)
+		                                            switch (l) {
+		                                                case 1:
+		                                                case 2:
+		                                                case 3:
+		                                                    boner[j].falen = true;
+		                                                    karta[boner[j].x][boner[j].y] = 0;
+		                                                    break;
+		                                                case 4:
+		                                                    karta[boner[j].x][boner[j].y] = 0;
+		                                                    boner.splice(j, 1);
+		                                                    Total_score(1);
+		                                                    bonerstat++;
+		                                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                                    break;
+		                                            }
+		                                            break;
+		                                        }
+		                                    }
+		                                    i = 81;
+		                                    break;
+		                                case 7:
+		                                    for (j = 0; j < ooze.length; j++) {
+		                                        if ((ooze[j].x == x_pos1 + i) && (ooze[j].y == y_pos1)) {
+		                                            ooze[j].life -= 3;
+		                                            if (ooze[j].life <= 0) {
+		                                                karta[ooze[j].x][ooze[j].y] = 0;
+		                                                ooze.splice(j, 1);
+		                                                Total_score(2);
+		                                                oozestat++;
+		                                                document.getElementById("st2").innerHTML = oozestat;
+		                                            }
+		                                            break;
+		                                        }
+		                                    }
+		                                    i = 81;
+		                                    break;
+		                                case 8:
+		                                    for (j = 0; j < spider.length; j++) {
+		                                        if ((spider[j].x == x_pos1 + i) && (spider[j].y == y_pos1)) {
+		                                            spider[j].life -= 3;
+		                                            if (spider[j].life <= 0) {
+		                                                karta[spider[j].x][spider[j].y] = 0;
+		                                                spider.splice(j, 1);
+		                                                Total_score(3);
+		                                                spiderstat++;
+		                                                document.getElementById("st3").innerHTML = spiderstat;
+		                                            }
+		                                            break;
+		                                        }
+		                                    }
+		                                    i = 81;
+		                                    break;
+		                            }
+		                        }
+		                        if (poisoned) {
+		                            poisonedtimer--;
+		                        }
+		                    } else {
+		                        if (event.code == 'KeyW') {
+		                            movechec = true;
+		                            //alert('W');
+		                            /*if (karta[x_pos1][y_pos1 - 1] == 0) {
+                                        karta[x_pos1][y_pos1] = 0;
+                                        karta[x_pos1][y_pos1 - 1] = 3;
+                                        y_pos1 -= 1;
+                                    } else {
+                                        if (karta[x_pos1][y_pos1 - 1] == 2) {
+                                            karta[x_pos1][y_pos1 - 1] = 0;
+                                        }
+                                    }*/
+		                            if (poisoned) {
+		                                switch (karta[x_pos1][y_pos1 - 1]) {
+		                                    case 0:
+		                                    case 10:
+		                                    case 9:
+		                                    case 1:
+		                                    case 2:
+		                                    case 3:
+		                                    case 4:
+		                                    case 5:
+		                                        break;
+		                                    case 6:
+		                                        for (i = 0; i < boner.length; i++) {
+		                                            if ((boner[i].x == x_pos1) && (boner[i].y == y_pos1 - 1)) {
+		                                                l = Math.floor(Math.random() * 4 + 1)
+		                                                switch (l) {
+		                                                    case 1:
+		                                                    case 2:
+		                                                    case 3:
+		                                                        boner[i].falen = true;
+		                                                        karta[boner[i].x][boner[i].y] = 0;
+		                                                        break;
+		                                                    case 4:
+		                                                        karta[boner[i].x][boner[i].y] = 0;
+		                                                        boner.splice(i, 1);
+		                                                        Total_score(1);
+		                                                        bonerstat++;
+		                                                        document.getElementById("st1").innerHTML = bonerstat;
+		                                                        break;
+		                                                }
+		                                                break;
+		                                            }
+		                                        }
+		                                        break;
+		                                    case 7:
+		                                        for (i = 0; i < ooze.length; i++) {
+		                                            if ((ooze[i].x == x_pos1) && (ooze[i].y == y_pos1 - 1)) {
+		                                                ooze[i].life -= 1;
+		                                                if (ooze[i].life <= 0) {
+		                                                    karta[ooze[i].x][ooze[i].y] = 0;
+		                                                    ooze.splice(i, 1);
+		                                                    Total_score(2);
+		                                                    oozestat++;
+		                                                    document.getElementById("st2").innerHTML = oozestat;
+		                                                }
+		                                                break;
+		                                            }
+		                                        }
+		                                        break;
+		                                    case 8:
+		                                        for (i = 0; i < spider.length; i++) {
+		                                            if ((spider[i].x == x_pos1) && (spider[i].y == y_pos1 - 1)) {
+		                                                spider[i].life -= 1;
+		                                                if (spider[i].life <= 0) {
+		                                                    karta[spider[i].x][spider[i].y] = 0;
+		                                                    spider.splice(i, 1);
+		                                                    Total_score(3);
+		                                                    spiderstat++;
+		                                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                                }
+		                                                break;
+		                                            }
+		                                        }
+		                                        break;
+		                                }
+		                                poisonedtimer -= 1;
+		                            } else {
+		                                switch (karta[x_pos1][y_pos1 - 1]) {
+		                                    case 0:
+		                                    case 9:
+		                                    case 10:
+		                                        karta[x_pos1][y_pos1] = 0;
+		                                        karta[x_pos1][y_pos1 - 1] = 3;
+		                                        y_pos1 -= 1;
+		                                        movestat++;
+		                                        document.getElementById("st4").innerHTML = movestat;
+		                                        break;
+		                                    case 1:
+		                                        break;
+		                                    case 2:
+		                                        karta[x_pos1][y_pos1 - 1] = 0;
+		                                        breakstat++;
+		                                        document.getElementById("st6").innerHTML = breakstat;
+		                                        break;
+		                                    case 3:
+		                                        break;
+		                                    case 4:
+		                                        alert("Подрубаю варп портал на новый уровень")
+		                                        lvl += 1;
+		                                        nextlvl();
+		                                        break;
+		                                    case 5:
+		                                        uf(-(hpshkymax - hpshky));
+		                                        karta[x_pos1][y_pos1 - 1] = 0;
+		                                        c4_i = true;
+		                                        break;
+		                                    case 6:
+		                                        for (i = 0; i < boner.length; i++) {
+		                                            if ((boner[i].x == x_pos1) && (boner[i].y == y_pos1 - 1)) {
+		                                                l = Math.floor(Math.random() * 4 + 1)
+		                                                switch (l) {
+		                                                    case 1:
+		                                                    case 2:
+		                                                    case 3:
+		                                                        boner[i].falen = true;
+		                                                        karta[boner[i].x][boner[i].y] = 0;
+		                                                        break;
+		                                                    case 4:
+		                                                        karta[boner[i].x][boner[i].y] = 0;
+		                                                        boner.splice(i, 1);
+		                                                        Total_score(1);
+		                                                        bonerstat++;
+		                                                        document.getElementById("st1").innerHTML = bonerstat;
+		                                                        break;
+		                                                }
+		                                                break;
+		                                            }
+		                                        }
+		                                        break;
+		                                    case 7:
+		                                        for (i = 0; i < ooze.length; i++) {
+		                                            if ((ooze[i].x == x_pos1) && (ooze[i].y == y_pos1 - 1)) {
+		                                                ooze[i].life -= 1;
+		                                                if (ooze[i].life <= 0) {
+		                                                    karta[ooze[i].x][ooze[i].y] = 0;
+		                                                    ooze.splice(i, 1);
+		                                                    Total_score(2);
+		                                                    oozestat++;
+		                                                    document.getElementById("st2").innerHTML = oozestat;
+		                                                }
+		                                                break;
+		                                            }
+		                                        }
+		                                        break;
+		                                    case 8:
+		                                        for (i = 0; i < spider.length; i++) {
+		                                            if ((spider[i].x == x_pos1) && (spider[i].y == y_pos1 - 1)) {
+		                                                spider[i].life -= 1;
+		                                                if (spider[i].life <= 0) {
+		                                                    karta[spider[i].x][spider[i].y] = 0;
+		                                                    spider.splice(i, 1);
+		                                                    Total_score(3);
+		                                                    spiderstat++;
+		                                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                                }
+		                                                break;
+		                                            }
+		                                        }
+		                                        break;
+		                                }
+		                            }
+		                        } else {
+		                            if (event.code == 'KeyA') {
+		                                movechec = true;
+		                                /*if (karta[x_pos1 - 1][y_pos1] == 0) {
+                                            karta[x_pos1][y_pos1] = 0;
+                                            karta[x_pos1 - 1][y_pos1] = 3;
+                                            x_pos1 -= 1;
+                                        } else {
+                                            if (karta[x_pos1 - 1][y_pos1] == 2) {
+                                                karta[x_pos1 - 1][y_pos1] = 0;
+                                            }
+                                        }*/
+		                                if (poisoned) {
+		                                    switch (karta[x_pos1 - 1][y_pos1]) {
+		                                        case 0:
+		                                        case 10:
+		                                        case 9:
+		                                        case 1:
+		                                        case 2:
+		                                        case 3:
+		                                        case 4:
+		                                        case 5:
+		                                            break;
+		                                        case 6:
+		                                            for (i = 0; i < boner.length; i++) {
+		                                                if ((boner[i].x == x_pos1 - 1) && (boner[i].y == y_pos1)) {
+		                                                    l = Math.floor(Math.random() * 4 + 1)
+		                                                    switch (l) {
+		                                                        case 1:
+		                                                        case 2:
+		                                                        case 3:
+		                                                            boner[i].falen = true;
+		                                                            karta[boner[i].x][boner[i].y] = 0;
+		                                                            break;
+		                                                        case 4:
+		                                                            karta[boner[i].x][boner[i].y] = 0;
+		                                                            boner.splice(i, 1);
+		                                                            Total_score(1);
+		                                                            bonerstat++;
+		                                                            document.getElementById("st1").innerHTML = bonerstat;
+		                                                            break;
+		                                                    }
+		                                                    break;
+		                                                }
+		                                            }
+		                                            break;
+		                                        case 7:
+		                                            //alert(1);
+		                                            for (i = 0; i < ooze.length; i++) {
+		                                                if ((ooze[i].x == x_pos1 - 1) && (ooze[i].y == y_pos1)) {
+		                                                    ooze[i].life -= 1;
+		                                                    if (ooze[i].life <= 0) {
+		                                                        karta[ooze[i].x][ooze[i].y] = 0;
+		                                                        ooze.splice(i, 1);
+		                                                        Total_score(2);
+		                                                        oozestat++;
+		                                                        document.getElementById("st2").innerHTML = oozestat;
+		                                                    }
+		                                                    break;
+		                                                }
+		                                            }
+		                                            break;
+		                                        case 8:
+		                                            for (i = 0; i < spider.length; i++) {
+		                                                if ((spider[i].x == x_pos1 - 1) && (spider[i].y == y_pos1)) {
+		                                                    spider[i].life -= 1;
+		                                                    if (spider[i].life <= 0) {
+		                                                        karta[spider[i].x][spider[i].y] = 0;
+		                                                        spider.splice(i, 1);
+		                                                        Total_score(3);
+		                                                        spiderstat++;
+		                                                        document.getElementById("st3").innerHTML = spiderstat;
+		                                                    }
+		                                                    break;
+		                                                }
+		                                            }
+		                                            break;
+		                                    }
+		                                    poisonedtimer -= 1;
+		                                } else {
+		                                    switch (karta[x_pos1 - 1][y_pos1]) {
+		                                        case 0:
+		                                        case 9:
+		                                        case 10:
+		                                            karta[x_pos1][y_pos1] = 0;
+		                                            karta[x_pos1 - 1][y_pos1] = 3;
+		                                            x_pos1 -= 1;
+		                                            movestat++;
+		                                            document.getElementById("st4").innerHTML = movestat;
+		                                            break;
+		                                        case 1:
+		                                            break;
+		                                        case 2:
+		                                            karta[x_pos1 - 1][y_pos1] = 0;
+		                                            breakstat++;
+		                                            document.getElementById("st6").innerHTML = breakstat;
+		                                            break;
+		                                        case 3:
+		                                            break;
+		                                        case 4:
+		                                            alert("Подрубаю варп портал на новый уровень")
+		                                            lvl += 1;
+		                                            nextlvl();
+		                                            break;
+		                                        case 5:
+		                                            uf(-(hpshkymax - hpshky));
+		                                            karta[x_pos1 - 1][y_pos1] = 0;
+		                                            c4_i = true;
+		                                            break;
+		                                        case 6:
+		                                            for (i = 0; i < boner.length; i++) {
+		                                                if ((boner[i].x == x_pos1 - 1) && (boner[i].y == y_pos1)) {
+		                                                    l = Math.floor(Math.random() * 4 + 1)
+		                                                    switch (l) {
+		                                                        case 1:
+		                                                        case 2:
+		                                                        case 3:
+		                                                            boner[i].falen = true;
+		                                                            karta[boner[i].x][boner[i].y] = 0;
+		                                                            break;
+		                                                        case 4:
+		                                                            karta[boner[i].x][boner[i].y] = 0;
+		                                                            boner.splice(i, 1);
+		                                                            Total_score(1);
+		                                                            bonerstat++;
+		                                                            document.getElementById("st1").innerHTML = bonerstat;
+		                                                            break;
+		                                                    }
+		                                                    break;
+		                                                }
+		                                            }
+		                                            break;
+		                                        case 7:
+		                                            //alert(1);
+		                                            for (i = 0; i < ooze.length; i++) {
+		                                                if ((ooze[i].x == x_pos1 - 1) && (ooze[i].y == y_pos1)) {
+		                                                    ooze[i].life -= 1;
+		                                                    if (ooze[i].life <= 0) {
+		                                                        karta[ooze[i].x][ooze[i].y] = 0;
+		                                                        ooze.splice(i, 1);
+		                                                        Total_score(2);
+		                                                        oozestat++;
+		                                                        document.getElementById("st2").innerHTML = oozestat;
+		                                                    }
+		                                                    break;
+		                                                }
+		                                            }
+		                                            break;
+		                                        case 8:
+		                                            for (i = 0; i < spider.length; i++) {
+		                                                if ((spider[i].x == x_pos1 - 1) && (spider[i].y == y_pos1)) {
+		                                                    spider[i].life -= 1;
+		                                                    if (spider[i].life <= 0) {
+		                                                        karta[spider[i].x][spider[i].y] = 0;
+		                                                        spider.splice(i, 1);
+		                                                        Total_score(3);
+		                                                        spiderstat++;
+		                                                        document.getElementById("st3").innerHTML = spiderstat;
+		                                                    }
+		                                                    break;
+		                                                }
+		                                            }
+		                                            break;
+		                                    }
+		                                }
+		                            } else {
+		                                if (event.code == 'KeyS') {
+		                                    movechec = true;
+		                                    /*if (karta[x_pos1][y_pos1+1] == 0) {
+                                                karta[x_pos1][y_pos1] = 0;
+                                                karta[x_pos1][y_pos1+1] = 3;
+                                                y_pos1 += 1;
+                                            } else {
+                                                if (karta[x_pos1][y_pos1 + 1] == 2) {
+                                                    karta[x_pos1][y_pos1 + 1] = 0;
+                                                }
+                                            }*/
+		                                    if (poisoned) {
+		                                        switch (karta[x_pos1][y_pos1 + 1]) {
+		                                            case 0:
+		                                            case 9:
+		                                            case 10:
+		                                            case 1:
+		                                            case 2:
+		                                            case 3:
+		                                            case 4:
+		                                            case 5:
+		                                                break;
+		                                            case 6:
+		                                                for (i = 0; i < boner.length; i++) {
+		                                                    if ((boner[i].x == x_pos1) && (boner[i].y == y_pos1 + 1)) {
+		                                                        l = Math.floor(Math.random() * 4 + 1)
+		                                                        switch (l) {
+		                                                            case 1:
+		                                                            case 2:
+		                                                            case 3:
+		                                                                boner[i].falen = true;
+		                                                                karta[boner[i].x][boner[i].y] = 0;
+		                                                                break;
+		                                                            case 4:
+		                                                                karta[boner[i].x][boner[i].y] = 0;
+		                                                                boner.splice(i, 1);
+		                                                                Total_score(1);
+		                                                                bonerstat++;
+		                                                                document.getElementById("st1").innerHTML = bonerstat;
+		                                                                break;
+		                                                        }
+		                                                        break;
+		                                                    }
+		                                                }
+		                                                break;
+		                                            case 7:
+		                                                for (i = 0; i < ooze.length; i++) {
+		                                                    if ((ooze[i].x == x_pos1) && (ooze[i].y == y_pos1 + 1)) {
+		                                                        ooze[i].life -= 1;
+		                                                        if (ooze[i].life <= 0) {
+		                                                            karta[ooze[i].x][ooze[i].y] = 0;
+		                                                            ooze.splice(i, 1);
+		                                                            Total_score(2);
+		                                                            oozestat++;
+		                                                            document.getElementById("st2").innerHTML = oozestat;
+		                                                        }
+		                                                        break;
+		                                                    }
+		                                                }
+		                                                break;
+		                                            case 8:
+		                                                for (i = 0; i < spider.length; i++) {
+		                                                    if ((spider[i].x == x_pos1) && (spider[i].y == y_pos1 + 1)) {
+		                                                        spider[i].life -= 1;
+		                                                        if (spider[i].life <= 0) {
+		                                                            karta[spider[i].x][spider[i].y] = 0;
+		                                                            spider.splice(i, 1);
+		                                                            Total_score(3);
+		                                                            spiderstat++;
+		                                                            document.getElementById("st3").innerHTML = spiderstat;
+		                                                        }
+		                                                        break;
+		                                                    }
+		                                                }
+		                                                break;
+		                                        }
+		                                        poisonedtimer -= 1;
+		                                    } else {
+		                                        switch (karta[x_pos1][y_pos1 + 1]) {
+		                                            case 0:
+		                                            case 9:
+		                                            case 10:
+		                                                karta[x_pos1][y_pos1] = 0;
+		                                                karta[x_pos1][y_pos1 + 1] = 3;
+		                                                y_pos1 += 1;
+		                                                movestat++;
+		                                                document.getElementById("st4").innerHTML = movestat;
+		                                                break;
+		                                            case 1:
+		                                                break;
+		                                            case 2:
+		                                                karta[x_pos1][y_pos1 + 1] = 0;
+		                                                breakstat++;
+		                                                document.getElementById("st6").innerHTML = breakstat;
+		                                                break;
+		                                            case 3:
+		                                                break;
+		                                            case 4:
+		                                                alert("Подрубаю варп портал на новый уровень")
+		                                                lvl += 1;
+		                                                nextlvl();
+		                                                break;
+		                                            case 5:
+		                                                uf(-(hpshkymax - hpshky));
+		                                                karta[x_pos1][y_pos1 + 1] = 0;
+		                                                c4_i = true;
+		                                                break;
+		                                            case 6:
+		                                                for (i = 0; i < boner.length; i++) {
+		                                                    if ((boner[i].x == x_pos1) && (boner[i].y == y_pos1 + 1)) {
+		                                                        l = Math.floor(Math.random() * 4 + 1)
+		                                                        switch (l) {
+		                                                            case 1:
+		                                                            case 2:
+		                                                            case 3:
+		                                                                boner[i].falen = true;
+		                                                                karta[boner[i].x][boner[i].y] = 0;
+		                                                                break;
+		                                                            case 4:
+		                                                                karta[boner[i].x][boner[i].y] = 0;
+		                                                                boner.splice(i, 1);
+		                                                                Total_score(1);
+		                                                                bonerstat++;
+		                                                                document.getElementById("st1").innerHTML = bonerstat;
+		                                                                break;
+		                                                        }
+		                                                        break;
+		                                                    }
+		                                                }
+		                                                break;
+		                                            case 7:
+		                                                for (i = 0; i < ooze.length; i++) {
+		                                                    if ((ooze[i].x == x_pos1) && (ooze[i].y == y_pos1 + 1)) {
+		                                                        ooze[i].life -= 1;
+		                                                        if (ooze[i].life <= 0) {
+		                                                            karta[ooze[i].x][ooze[i].y] = 0;
+		                                                            ooze.splice(i, 1);
+		                                                            Total_score(2);
+		                                                            oozestat++;
+		                                                            document.getElementById("st2").innerHTML = oozestat;
+		                                                        }
+		                                                        break;
+		                                                    }
+		                                                }
+		                                                break;
+		                                            case 8:
+		                                                for (i = 0; i < spider.length; i++) {
+		                                                    if ((spider[i].x == x_pos1) && (spider[i].y == y_pos1 + 1)) {
+		                                                        spider[i].life -= 1;
+		                                                        if (spider[i].life <= 0) {
+		                                                            karta[spider[i].x][spider[i].y] = 0;
+		                                                            spider.splice(i, 1);
+		                                                            Total_score(3);
+		                                                            spiderstat++;
+		                                                            document.getElementById("st3").innerHTML = spiderstat;
+		                                                        }
+		                                                        break;
+		                                                    }
+		                                                }
+		                                                break;
+		                                        }
+		                                    }
+		                                } else {
+		                                    if (event.code == 'KeyD') {
+		                                        movechec = true;
+		                                        /*if (karta[x_pos1 + 1][y_pos1] == 0) {
+                                                    karta[x_pos1][y_pos1] = 0;
+                                                    karta[x_pos1 + 1][y_pos1] = 3;
+                                                    x_pos1 += 1;
+                                                } else {
+                                                    if (karta[x_pos1+1][y_pos1] == 2) {
+                                                        karta[x_pos1+1][y_pos1] = 0;
+                                                    }
+                                                }*/
+		                                        if (poisoned) {
+		                                            switch (karta[x_pos1 + 1][y_pos1]) {
+		                                                case 0:
+		                                                case 9:
+		                                                case 10:
+		                                                case 1:
+		                                                case 2:
+		                                                case 3:
+		                                                case 4:
+		                                                case 5:
+		                                                    break;
+		                                                case 6:
+		                                                    for (i = 0; i < boner.length; i++) {
+		                                                        if ((boner[i].x == x_pos1 + 1) && (boner[i].y == y_pos1)) {
+		                                                            l = Math.floor(Math.random() * 4 + 1)
+		                                                            switch (l) {
+		                                                                case 1:
+		                                                                case 2:
+		                                                                case 3:
+		                                                                    boner[i].falen = true;
+		                                                                    karta[boner[i].x][boner[i].y] = 0;
+		                                                                    break;
+		                                                                case 4:
+		                                                                    karta[boner[i].x][boner[i].y] = 0;
+		                                                                    boner.splice(i, 1);
+		                                                                    Total_score(1);
+		                                                                    bonerstat++;
+		                                                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                                                    break;
+		                                                            }
+		                                                            break;
+		                                                        }
+		                                                    }
+		                                                    break;
+		                                                case 7:
+		                                                    for (i = 0; i < ooze.length; i++) {
+		                                                        if ((ooze[i].x == x_pos1 + 1) && (ooze[i].y == y_pos1)) {
+		                                                            ooze[i].life -= 1;
+		                                                            if (ooze[i].life <= 0) {
+		                                                                karta[ooze[i].x][ooze[i].y] = 0;
+		                                                                ooze.splice(i, 1);
+		                                                                Total_score(2);
+		                                                                oozestat++;
+		                                                                document.getElementById("st2").innerHTML = oozestat;
+		                                                            }
+		                                                            break;
+		                                                        }
+		                                                    }
+		                                                    break;
+		                                                case 8:
+		                                                    for (i = 0; i < spider.length; i++) {
+		                                                        if ((spider[i].x == x_pos1 + 1) && (spider[i].y == y_pos1)) {
+		                                                            spider[i].life -= 1;
+		                                                            if (spider[i].life <= 0) {
+		                                                                karta[spider[i].x][spider[i].y] = 0;
+		                                                                spider.splice(i, 1);
+		                                                                Total_score(3);
+		                                                                spiderstat++;
+		                                                                document.getElementById("st3").innerHTML = spiderstat;
+		                                                            }
+		                                                            break;
+		                                                        }
+		                                                    }
+		                                                    break;
+		                                            }
+		                                            poisonedtimer--;
+		                                        } else {
+		                                            switch (karta[x_pos1 + 1][y_pos1]) {
+		                                                case 0:
+		                                                case 9:
+		                                                case 10:
+		                                                    karta[x_pos1][y_pos1] = 0;
+		                                                    karta[x_pos1 + 1][y_pos1] = 3;
+		                                                    x_pos1 += 1;
+		                                                    movestat++;
+		                                                    document.getElementById("st4").innerHTML = movestat;
+		                                                    break;
+		                                                case 1:
+		                                                    break;
+		                                                case 2:
+		                                                    karta[x_pos1 + 1][y_pos1] = 0;
+		                                                    breakstat++;
+		                                                    document.getElementById("st6").innerHTML = breakstat;
+		                                                    break;
+		                                                case 3:
+		                                                    break;
+		                                                case 4:
+		                                                    alert("Подрубаю варп портал на новый уровень")
+		                                                    lvl += 1;
+		                                                    nextlvl();
+		                                                    break;
+		                                                case 5:
+		                                                    uf(-(hpshkymax - hpshky));
+		                                                    karta[x_pos1 + 1][y_pos1] = 0;
+		                                                    c4_i = true;
+		                                                    break;
+		                                                case 6:
+		                                                    for (i = 0; i < boner.length; i++) {
+		                                                        if ((boner[i].x == x_pos1 + 1) && (boner[i].y == y_pos1)) {
+		                                                            l = Math.floor(Math.random() * 4 + 1)
+		                                                            switch (l) {
+		                                                                case 1:
+		                                                                case 2:
+		                                                                case 3:
+		                                                                    boner[i].falen = true;
+		                                                                    karta[boner[i].x][boner[i].y] = 0;
+		                                                                    break;
+		                                                                case 4:
+		                                                                    karta[boner[i].x][boner[i].y] = 0;
+		                                                                    boner.splice(i, 1);
+		                                                                    Total_score(1);
+		                                                                    bonerstat++;
+		                                                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                                                    break;
+		                                                            }
+		                                                            break;
+		                                                        }
+		                                                    }
+		                                                    break;
+		                                                case 7:
+		                                                    for (i = 0; i < ooze.length; i++) {
+		                                                        if ((ooze[i].x == x_pos1 + 1) && (ooze[i].y == y_pos1)) {
+		                                                            ooze[i].life -= 1;
+		                                                            if (ooze[i].life <= 0) {
+		                                                                karta[ooze[i].x][ooze[i].y] = 0;
+		                                                                ooze.splice(i, 1);
+		                                                                Total_score(2);
+		                                                                oozestat++;
+		                                                                document.getElementById("st2").innerHTML = oozestat;
+		                                                            }
+		                                                            break;
+		                                                        }
+		                                                    }
+		                                                    break;
+		                                                case 8:
+		                                                    for (i = 0; i < spider.length; i++) {
+		                                                        if ((spider[i].x == x_pos1 + 1) && (spider[i].y == y_pos1)) {
+		                                                            spider[i].life -= 1;
+		                                                            if (spider[i].life <= 0) {
+		                                                                karta[spider[i].x][spider[i].y] = 0;
+		                                                                spider.splice(i, 1);
+		                                                                Total_score(3);
+		                                                                spiderstat++;
+		                                                                document.getElementById("st3").innerHTML = spiderstat;
+		                                                            }
+		                                                            break;
+		                                                        }
+		                                                    }
+		                                                    break;
+		                                            }
+		                                        }
+		                                    } else {
+		                                        if (event.code == 'KeyE' && c4_i == true && c4_p == false) {
+		                                            //alert('c4_i ' + c4_i + ' c4_p ' + c4_p);
+		                                            c4_x = x_pos1;
+		                                            c4_y = y_pos1;
+		                                            c4_i = false;
+		                                            c4_p = true;
+		                                        }
+		                                    }
+		                                }
+		                            }
+		                        }
+		                    }
+		                }
+		            }
+		        }
+		        if (movechec) {
+		            if (c4_p) {
+		                c4_et++;
+		                if (c4_et >= 5) {
+		                    switch (karta[c4_x][c4_y]) {
+		                        case 1:
+		                        case 2:
+		                        case 4:
+		                        case 9:
+		                            karta[c4_x][c4_y] = 0;
+		                            breakstat++;
+		                            document.getElementById("st6").innerHTML = breakstat;
+		                            break;
+		                        case 3:
+		                            uf(20);
+		                            break;
+		                        case 6:
+		                            for (i = 0; i < boner.length; i++) {
+		                                if ((boner[i].x == c4_x) && (boner[i].y == c4_y)) {
+		                                    boner.splice(i, 1);
+		                                    bonerstat++;
+		                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                    karta[c4_x][c4_y] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 7:
+		                            for (i = 0; i < ooze.length; i++) {
+		                                if ((ooze[i].x == c4_x) && (ooze[i].y == c4_y)) {
+		                                    ooze.splice(i, 1);
+		                                    oozestat++;
+		                                    document.getElementById("st2").innerHTML = oozestat;
+		                                    karta[c4_x][c4_y] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 8:
+		                            for (i = 0; i < spider.length; i++) {
+		                                if ((spider[i].x == c4_x) && (spider[i].y == c4_y)) {
+		                                    spider.splice(i, 1);
+		                                    spiderstat++;
+		                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                    karta[c4_x][c4_y] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                    }
+
+		                    switch (karta[c4_x + 1][c4_y]) {
+		                        case 1:
+		                        case 2:
+		                        case 4:
+		                        case 9:
+		                            //alert('dfdff');
+		                            karta[c4_x + 1][c4_y] = 0;
+		                            breakstat++;
+		                            document.getElementById("st6").innerHTML = breakstat;
+		                            break;
+		                        case 3:
+		                            uf(20);
+		                            break;
+		                        case 6:
+		                            for (i = 0; i < boner.length; i++) {
+		                                if ((boner[i].x == c4_x + 1) && (boner[i].y == c4_y)) {
+		                                    boner.splice(i, 1);
+		                                    bonerstat++;
+		                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                    karta[c4_x + 1][c4_y] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 7:
+		                            for (i = 0; i < ooze.length; i++) {
+		                                if ((ooze[i].x == c4_x + 1) && (ooze[i].y == c4_y)) {
+		                                    ooze.splice(i, 1);
+		                                    oozestat++;
+		                                    document.getElementById("st2").innerHTML = oozestat;
+		                                    karta[c4_x + 1][c4_y] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 8:
+		                            for (i = 0; i < spider.length; i++) {
+		                                if ((spider[i].x == c4_x + 1) && (spider[i].y == c4_y)) {
+		                                    spider.splice(i, 1);
+		                                    spiderstat++;
+		                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                    karta[c4_x + 1][c4_y] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                    }
+
+		                    /*if (karta[c4_x + 1][c4_y] != 4) {
+                                karta[c4_x + 1][c4_y] = 0
+                            }*/
+
+		                    switch (karta[c4_x - 1][c4_y]) {
+		                        case 1:
+		                        case 2:
+		                        case 4:
+		                        case 9:
+		                            karta[c4_x - 1][c4_y] = 0;
+		                            breakstat++;
+		                            document.getElementById("st6").innerHTML = breakstat;
+		                            break;
+		                        case 3:
+		                            uf(20);
+		                            break;
+		                        case 6:
+		                            for (i = 0; i < boner.length; i++) {
+		                                if ((boner[i].x == c4_x - 1) && (boner[i].y == c4_y)) {
+		                                    boner.splice(i, 1);
+		                                    bonerstat++;
+		                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                    karta[c4_x - 1][c4_y] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 7:
+		                            for (i = 0; i < ooze.length; i++) {
+		                                if ((ooze[i].x == c4_x - 1) && (ooze[i].y == c4_y)) {
+		                                    ooze.splice(i, 1);
+		                                    oozestat++;
+		                                    document.getElementById("st2").innerHTML = oozestat;
+		                                    karta[c4_x - 1][c4_y] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 8:
+		                            for (i = 0; i < spider.length; i++) {
+		                                if ((spider[i].x == c4_x - 1) && (spider[i].y == c4_y)) {
+		                                    spider.splice(i, 1);
+		                                    spiderstat++;
+		                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                    karta[c4_x - 1][c4_y] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                    }
+
+		                    /*if (karta[c4_x - 1][c4_y] != 4) {
+                                karta[c4_x - 1][c4_y] = 0
+                            }*/
+
+		                    switch (karta[c4_x + 1][c4_y + 1]) {
+		                        case 1:
+		                        case 2:
+		                        case 4:
+		                        case 9:
+		                            karta[c4_x + 1][c4_y + 1] = 0;
+		                            breakstat++;
+		                            document.getElementById("st6").innerHTML = breakstat;
+		                            break;
+		                        case 3:
+		                            uf(20);
+		                            break;
+		                        case 6:
+		                            for (i = 0; i < boner.length; i++) {
+		                                if ((boner[i].x == c4_x + 1) && (boner[i].y == c4_y + 1)) {
+		                                    boner.splice(i, 1);
+		                                    bonerstat++;
+		                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                    karta[c4_x + 1][c4_y + 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 7:
+		                            for (i = 0; i < ooze.length; i++) {
+		                                if ((ooze[i].x == c4_x + 1) && (ooze[i].y == c4_y + 1)) {
+		                                    ooze.splice(i, 1);
+		                                    oozestat++;
+		                                    document.getElementById("st2").innerHTML = oozestat;
+		                                    karta[c4_x + 1][c4_y + 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 8:
+		                            for (i = 0; i < spider.length; i++) {
+		                                if ((spider[i].x == c4_x + 1) && (spider[i].y == c4_y + 1)) {
+		                                    spider.splice(i, 1);
+		                                    spiderstat++;
+		                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                    karta[c4_x + 1][c4_y + 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                    }
+
+		                    /*if (karta[c4_x + 1][c4_y + 1] != 4) {
+                                karta[c4_x + 1][c4_y + 1] = 0
+                            }*/
+
+		                    switch (karta[c4_x + 1][c4_y - 1]) {
+		                        case 1:
+		                        case 2:
+		                        case 4:
+		                        case 9:
+		                            karta[c4_x + 1][c4_y - 1] = 0;
+		                            breakstat++;
+		                            document.getElementById("st6").innerHTML = breakstat;
+		                            break;
+		                        case 3:
+		                            uf(20);
+		                            break;
+		                        case 6:
+		                            for (i = 0; i < boner.length; i++) {
+		                                if ((boner[i].x == c4_x + 1) && (boner[i].y == c4_y - 1)) {
+		                                    boner.splice(i, 1);
+		                                    bonerstat++;
+		                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                    karta[c4_x + 1][c4_y - 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 7:
+		                            for (i = 0; i < ooze.length; i++) {
+		                                if ((ooze[i].x == c4_x + 1) && (ooze[i].y == c4_y - 1)) {
+		                                    ooze.splice(i, 1);
+		                                    oozestat++;
+		                                    document.getElementById("st2").innerHTML = oozestat;
+		                                    karta[c4_x + 1][c4_y - 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 8:
+		                            for (i = 0; i < spider.length; i++) {
+		                                if ((spider[i].x == c4_x + 1) && (spider[i].y == c4_y - 1)) {
+		                                    spider.splice(i, 1);
+		                                    spiderstat++;
+		                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                    karta[c4_x + 1][c4_y - 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                    }
+
+		                    /*if (karta[c4_x + 1][c4_y - 1] != 4) {
+                                karta[c4_x + 1][c4_y - 1] = 0
+                            }*/
+
+		                    switch (karta[c4_x - 1][c4_y + 1]) {
+		                        case 1:
+		                        case 2:
+		                        case 4:
+		                        case 9:
+		                            karta[c4_x - 1][c4_y + 1] = 0;
+		                            breakstat++;
+		                            document.getElementById("st6").innerHTML = breakstat;
+		                            break;
+		                        case 3:
+		                            uf(20);
+		                            break;
+		                        case 6:
+		                            for (i = 0; i < boner.length; i++) {
+		                                if ((boner[i].x == c4_x - 1) && (boner[i].y == c4_y + 1)) {
+		                                    boner.splice(i, 1);
+		                                    bonerstat++;
+		                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                    karta[c4_x - 1][c4_y + 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 7:
+		                            for (i = 0; i < ooze.length; i++) {
+		                                if ((ooze[i].x == c4_x - 1) && (ooze[i].y == c4_y + 1)) {
+		                                    ooze.splice(i, 1);
+		                                    oozestat++;
+		                                    document.getElementById("st2").innerHTML = oozestat;
+		                                    karta[c4_x - 1][c4_y + 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 8:
+		                            for (i = 0; i < spider.length; i++) {
+		                                if ((spider[i].x == c4_x - 1) && (spider[i].y == c4_y + 1)) {
+		                                    spider.splice(i, 1);
+		                                    spiderstat++;
+		                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                    karta[c4_x - 1][c4_y + 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                    }
+
+		                    /*if (karta[c4_x - 1][c4_y + 1] != 4) {
+                                karta[c4_x - 1][c4_y + 1] = 0
+                            }*/
+
+		                    switch (karta[c4_x - 1][c4_y - 1]) {
+		                        case 1:
+		                        case 2:
+		                        case 4:
+		                        case 9:
+		                            karta[c4_x - 1][c4_y - 1] = 0;
+		                            breakstat++;
+		                            document.getElementById("st6").innerHTML = breakstat;
+		                            break;
+		                        case 3:
+		                            uf(20);
+		                            break;
+		                        case 6:
+		                            for (i = 0; i < boner.length; i++) {
+		                                if ((boner[i].x == c4_x - 1) && (boner[i].y == c4_y - 1)) {
+		                                    boner.splice(i, 1);
+		                                    bonerstat++;
+		                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                    karta[c4_x - 1][c4_y - 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 7:
+		                            for (i = 0; i < ooze.length; i++) {
+		                                if ((ooze[i].x == c4_x - 1) && (ooze[i].y == c4_y - 1)) {
+		                                    ooze.splice(i, 1);
+		                                    oozestat++;
+		                                    document.getElementById("st2").innerHTML = oozestat;
+		                                    karta[c4_x - 1][c4_y - 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 8:
+		                            for (i = 0; i < spider.length; i++) {
+		                                if ((spider[i].x == c4_x - 1) && (spider[i].y == c4_y - 1)) {
+		                                    spider.splice(i, 1);
+		                                    spiderstat++;
+		                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                    karta[c4_x - 1][c4_y - 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                    }
+
+		                    /*if (karta[c4_x - 1][c4_y - 1] != 4) {
+                                karta[c4_x - 1][c4_y - 1] = 0
+                            }*/
+
+		                    switch (karta[c4_x][c4_y + 1]) {
+		                        case 1:
+		                        case 2:
+		                        case 4:
+		                        case 9:
+		                            karta[c4_x][c4_y + 1] = 0;
+		                            breakstat++;
+		                            document.getElementById("st6").innerHTML = breakstat;
+		                            break;
+		                        case 3:
+		                            uf(20);
+		                            break;
+		                        case 6:
+		                            for (i = 0; i < boner.length; i++) {
+		                                if ((boner[i].x == c4_x) && (boner[i].y == c4_y + 1)) {
+		                                    boner.splice(i, 1);
+		                                    bonerstat++;
+		                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                    karta[c4_x][c4_y + 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 7:
+		                            for (i = 0; i < ooze.length; i++) {
+		                                if ((ooze[i].x == c4_x) && (ooze[i].y == c4_y + 1)) {
+		                                    ooze.splice(i, 1);
+		                                    oozestat++;
+		                                    document.getElementById("st2").innerHTML = oozestat;
+		                                    karta[c4_x][c4_y + 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 8:
+		                            for (i = 0; i < spider.length; i++) {
+		                                if ((spider[i].x == c4_x) && (spider[i].y == c4_y + 1)) {
+		                                    spider.splice(i, 1);
+		                                    spiderstat++;
+		                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                    karta[c4_x][c4_y + 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                    }
+
+		                    /*if (karta[c4_x][c4_y + 1] != 4) {
+                                karta[c4_x][c4_y + 1] = 0
+                            }*/
+
+		                    switch (karta[c4_x][c4_y - 1]) {
+		                        case 1:
+		                        case 2:
+		                        case 4:
+		                        case 9:
+		                            karta[c4_x][c4_y - 1] = 0;
+		                            breakstat++;
+		                            document.getElementById("st6").innerHTML = breakstat;
+		                            break;
+		                        case 3:
+		                            uf(20);
+		                            break;
+		                        case 6:
+		                            for (i = 0; i < boner.length; i++) {
+		                                if ((boner[i].x == c4_x) && (boner[i].y == c4_y - 1)) {
+		                                    boner.splice(i, 1);
+		                                    bonerstat++;
+		                                    document.getElementById("st1").innerHTML = bonerstat;
+		                                    karta[c4_x][c4_y - 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 7:
+		                            for (i = 0; i < ooze.length; i++) {
+		                                if ((ooze[i].x == c4_x) && (ooze[i].y == c4_y - 1)) {
+		                                    ooze.splice(i, 1);
+		                                    oozestat++;
+		                                    document.getElementById("st2").innerHTML = oozestat;
+		                                    karta[c4_x][c4_y - 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                        case 8:
+		                            for (i = 0; i < spider.length; i++) {
+		                                if ((spider[i].x == c4_x) && (spider[i].y == c4_y - 1)) {
+		                                    spider.splice(i, 1);
+		                                    spiderstat++;
+		                                    document.getElementById("st3").innerHTML = spiderstat;
+		                                    karta[c4_x][c4_y - 1] = 0;
+		                                    break
+		                                }
+		                            }
+		                            break;
+		                    }
+
+		                    /*if (karta[c4_x][c4_y - 1] != 4) {
+                                karta[c4_x][c4_y - 1] = 0
+                            }*/
+		                    c4_p = false;
+		                    c4_et = 0;
+		                    c4stat++;
+		                    document.getElementById("st5").innerHTML = c4stat;
+		                }
+		            }
+		            if (reload) {
+		                reloadchec += 1;
+		                if (reloadchec >= 5) {
+		                    reload = false;
+		                    reloadchec = 0;
+		                }
+		            }
+		            if (poisonedtimer <= 0) {
+		                poisoned = false;
+		            }
+		            for (i = 0; i < boner.length; i++) {
+		                if (boner[i].falen == true) {
+		                    boner[i].respun += 1;
+		                    if ((boner[i].respun >= 4) && ((boner[i].x != x_pos1) || (boner[i].y != y_pos1))) {
+		                        boner[i].respun = 0;
+		                        boner[i].falen = false;
+		                        karta[boner[i].x][boner[i].y] = 6;
+		                    }
+		                }
+		            }
+		            step();
+		            net();
+		            movechec = false;
+		        }
+		    }
+		});
+		    
+    </script>
+    <style type="text/css">
+
+        #kartinka {
+            display: inline-block;
+        }
+
+        #canvas {
+            float: left;
+            padding: 0;
+            margin-top: 0px;
+            margin-left: 0px;
+            display: block;
+            background-color: dimgray;
+        }
+
+        #name {
+            display: inline-block;
+            background-color: white;
+        }
+
+        #nik {
+            float: left;
+            display: inline-block;
+            background-color: white;
+        }
+
+        #canvas_reload {
+            float: left;
+            border-top: 5px solid black;
+            border-bottom: 5px solid black;
+            border-left: 5px solid black;
+            margin-left: 0px;
+            padding: 0;
+            display: block;
+            background-color: green;
+        }
+
+        #fon {
+            margin: auto;
+            display: block;
+            height: 500px;
+        }
+
+        #table_score {
+            margin-left: 15px;
+            display: inline-block;
+            background-color: white;
+        }
+
+        button {
+            font-size: 20px;
+        }
+
+        #stat {
+            margin-top: 0px;
+            margin-left: 25px;
+        }
+        #statname {
+            float: left;
+            display: inline-block;
+        }
+        #statstat{
+            display: inline-block;
+        }
+    </style>
+</head>
+<body onload="init()">
+    <div id="fon">
+        <canvas id="canvas_reload" width="20" height="800"></canvas>
+        <canvas id="canvas" width="810" height="810" onClick="bup()" onmousemove=""></canvas>
+        <div id="kartinka">
+            <div><img src="памятка.png" width="150" height="270"></div>
+            <div id="stat">
+                <div id="statstat"><h2 id="user"></h2></div>
+            </div>
+            <div id="stat">
+                <div id="statname"><h2>Счет - </h2></div>
+                <div id="statstat"><h2 id="my_score"> 0</h2></div>
+            </div>
+            <div id="stat">
+                <div id="statname"><h2>Убито скелетов - </h2></div>
+                <div id="statstat"><h2 id="st1"> 0</h2></div>
+            </div>
+            <div id="stat">
+                <div id="statname"><h2>Убито слизней - </h2></div>
+                <div id="statstat"><h2 id="st2"> 0</h2></div>
+            </div>
+            <div id="stat">
+                <div id="statname"><h2>Убито пауков - </h2></div>
+                <div id="statstat"><h2 id="st3"> 0</h2></div>
+            </div>
+            <div id="stat">
+                <div id="statname"><h2>Шагов сделано - </h2></div>
+                <div id="statstat"><h2 id="st4"> 0</h2></div>
+            </div>
+            <div id="stat">
+                <div id="statname"><h2>Бомб взорвано - </h2></div>
+                <div id="statstat"><h2 id="st5"> 0</h2></div>
+            </div>
+            <div id="stat">
+                <div id="statname"><h2>Блоков разбито - </h2></div>
+                <div id="statstat"><h2 id="st6"> 0</h2></div>
+            </div>
+        </div> 
+    </div>
+</body>
+</html>
